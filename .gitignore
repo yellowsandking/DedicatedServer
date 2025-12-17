@@ -1,0 +1,75 @@
+# ============================
+# Unreal Engine - Recommended
+# ============================
+
+# 项目中不需要提交的缓存、派生数据
+DerivedDataCache/
+Saved/
+Intermediate/
+IntermediateBuild/
+Build/Android/gradle/
+
+# UE5 新增：DerivedData
+Binaries/
+DerivedDataCache/
+Windows/DerivedDataCache/
+Mac/DerivedDataCache/
+
+# 编辑器自动生成的临时文件
+*.VC.db
+*.VC.opendb
+*.sdf
+*.sln
+*.suo
+*.opensdf
+*.vscode/
+*.idea/
+.vs/
+
+# 编译输出
+Binaries/
+Build/*/Binaries/
+Build/*/Intermediate/
+
+# 本地设置
+*.ini.local
+Saved/Config/WindowsEditor/*.ini
+
+# 日志
+Saved/Logs/
+
+# 打包输出（不需要提交）
+Build/
+
+# 自动生成的插件或模块
+Plugins/*/Intermediate/
+Plugins/*/Binaries/
+
+# Rider / JetBrains
+.idea/
+*.DotSettings.user
+
+# Mac 和系统文件
+.DS_Store
+Thumbs.db
+
+# Crash
+*.dmp
+
+# Python 虚拟环境（如果用了 UE Python）
+.env/
+venv/
+__pycache__/
+
+# ============================
+# Unreal Project Files Keep
+# ============================
+!Content/
+!Source/
+!Config/
+!Plugins/
+
+# 对于 Plugins，如果插件是你们自己写的，请保留：
+!Plugins/*/Source/
+!Plugins/*/Config/
+!Plugins/*/Resources/
