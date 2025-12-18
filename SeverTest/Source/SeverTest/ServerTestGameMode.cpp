@@ -4,11 +4,19 @@
 #include "Engine/Engine.h"
 #include "GameFramework/PlayerController.h"
 #include "Net/UnrealNetwork.h"
+#include "ServerTestGameState.h"
+#include "ServerTestPlayerController.h"
 
 AServerTestGameMode::AServerTestGameMode()
 {
 	// 设置默认Pawn类（如果需要）
 	// DefaultPawnClass = nullptr;
+	
+	// 设置自定义GameState类
+	GameStateClass = AServerTestGameState::StaticClass();
+	
+	// 设置自定义PlayerController类
+	PlayerControllerClass = AServerTestPlayerController::StaticClass();
 	
 	// 启用网络复制
 	bReplicates = true;
