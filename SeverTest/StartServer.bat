@@ -10,7 +10,7 @@ set SERVER_PORT=7777
 
 REM 启动服务器
 REM 注意: 需要先编译SeverTestServer target
-SeverTestServer.exe -log -server -game -port=%SERVER_PORT% -unattended
+SeverTestServer.exe /Game/Maps/ServerMap?listen -log -server -game -port=%SERVER_PORT% -unattended
 
 pause
 
