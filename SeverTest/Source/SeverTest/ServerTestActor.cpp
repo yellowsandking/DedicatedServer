@@ -46,7 +46,23 @@ void AServerTestActor::BeginPlay()
 
 	if (HasAuthority())
 	{
-		UE_LOG(LogTemp, Log, TEXT("ServerTestActor spawned on server at location: %s"), *InitialLocation.ToString());
+		// 服务器端日志 - 蓝色
+		UE_LOG(LogTemp, Warning, TEXT("[SERVER] ServerTestActor spawned on server at location: %s"), *InitialLocation.ToString());
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue,
+				FString::Printf(TEXT("[SERVER] ServerTestActor spawned at location: %s"), *InitialLocation.ToString()));
+		}
+	}
+	else
+	{
+		// 客户端日志 - 绿色
+		UE_LOG(LogTemp, Warning, TEXT("[CLIENT] ServerTestActor spawned on client at location: %s"), *InitialLocation.ToString());
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green,
+				FString::Printf(TEXT("[CLIENT] ServerTestActor spawned at location: %s"), *InitialLocation.ToString()));
+		}
 	}
 }
 
@@ -63,6 +79,21 @@ void AServerTestActor::Tick(float DeltaTime)
 
 void AServerTestActor::UpdateServerSide(float DeltaTime)
 {
+	// 服务器端逻辑 - 蓝色日志
+	static float LogInterval = 0.0f;
+	LogInterval += DeltaTime;
+	
+	if (LogInterval >= 2.0f) // 每2秒输出一次日志，避免日志过多
+	{
+		LogInterval = 0.0f;
+		UE_LOG(LogTemp, Log, TEXT("[SERVER] ServerTestActor executing server-side update logic"));
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Blue,
+				TEXT("[SERVER] Executing server-side update logic"));
+		}
+	}
+
 	TimeAccumulator += DeltaTime;
 
 	// 圆形移动
@@ -89,18 +120,30 @@ void AServerTestActor::UpdateServerSide(float DeltaTime)
 
 void AServerTestActor::OnRep_Location()
 {
-	// 客户端接收到位置更新
+	// 客户端接收到位置更新 - 绿色日志
 	if (!HasAuthority())
 	{
+		UE_LOG(LogTemp, Log, TEXT("[CLIENT] ServerTestActor received location update: %s"), *ReplicatedLocation.ToString());
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green,
+				FString::Printf(TEXT("[CLIENT] Received location update: %s"), *ReplicatedLocation.ToString()));
+		}
 		SetActorLocation(ReplicatedLocation);
 	}
 }
 
 void AServerTestActor::OnRep_Rotation()
 {
-	// 客户端接收到旋转更新
+	// 客户端接收到旋转更新 - 绿色日志
 	if (!HasAuthority())
 	{
+		UE_LOG(LogTemp, Log, TEXT("[CLIENT] ServerTestActor received rotation update: %s"), *ReplicatedRotation.ToString());
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green,
+				FString::Printf(TEXT("[CLIENT] Received rotation update: %s"), *ReplicatedRotation.ToString()));
+		}
 		SetActorRotation(ReplicatedRotation);
 	}
 }
