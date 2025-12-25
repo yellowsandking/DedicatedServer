@@ -27,7 +27,7 @@ void AServerTestPlayerController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 
-	if (HasAuthority())
+	if (IsServer())
 	{
 		UE_LOG(LogTemp, Log, TEXT("Server: Player %s possessed pawn"), *GetName());
 	}
@@ -151,6 +151,12 @@ void AServerTestPlayerController::InitializeServerTimeSync()
 		GetWorld()->GetTimerManager().SetTimer(ServerTimeUpdateTimer, this, 
 			&AServerTestPlayerController::UpdateServerTime, 5.0f, true);
 	}
+}
+
+bool AServerTestPlayerController::IsServer() const
+{
+	// 同时检查HasAuthority和NetMode，确保是服务器端
+	return HasAuthority() && GetNetMode() != NM_Client;
 }
 
 void AServerTestPlayerController::UpdateServerTime()

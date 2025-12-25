@@ -44,7 +44,7 @@ void AServerTestActor::BeginPlay()
 	ReplicatedLocation = InitialLocation;
 	ReplicatedRotation = GetActorRotation();
 
-	if (HasAuthority())
+	if (IsServer())
 	{
 		// 服务器端日志 - 蓝色
 		UE_LOG(LogTemp, Warning, TEXT("[SERVER] ServerTestActor spawned on server at location: %s"), *InitialLocation.ToString());
@@ -71,7 +71,7 @@ void AServerTestActor::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	// 只在服务器端执行移动逻辑
-	if (HasAuthority())
+	if (IsServer())
 	{
 		UpdateServerSide(DeltaTime);
 	}
@@ -121,7 +121,7 @@ void AServerTestActor::UpdateServerSide(float DeltaTime)
 void AServerTestActor::OnRep_Location()
 {
 	// 客户端接收到位置更新 - 绿色日志
-	if (!HasAuthority())
+	if (!IsServer())
 	{
 		UE_LOG(LogTemp, Log, TEXT("[CLIENT] ServerTestActor received location update: %s"), *ReplicatedLocation.ToString());
 		if (GEngine)
@@ -136,7 +136,7 @@ void AServerTestActor::OnRep_Location()
 void AServerTestActor::OnRep_Rotation()
 {
 	// 客户端接收到旋转更新 - 绿色日志
-	if (!HasAuthority())
+	if (!IsServer())
 	{
 		UE_LOG(LogTemp, Log, TEXT("[CLIENT] ServerTestActor received rotation update: %s"), *ReplicatedRotation.ToString());
 		if (GEngine)
@@ -146,6 +146,12 @@ void AServerTestActor::OnRep_Rotation()
 		}
 		SetActorRotation(ReplicatedRotation);
 	}
+}
+
+bool AServerTestActor::IsServer() const
+{
+	// 同时检查HasAuthority和NetMode，确保是服务器端
+	return HasAuthority() && GetNetMode() != NM_Client;
 }
 
 void AServerTestActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

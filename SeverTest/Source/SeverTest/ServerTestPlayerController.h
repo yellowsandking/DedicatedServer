@@ -47,6 +47,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Server")
 	void RequestServerTime();
 
+	// 判断是否是服务器端（同时检查HasAuthority和NetMode）
+	UFUNCTION(BlueprintCallable, Category = "Server")
+	bool IsServer() const;
+
 protected:
 	// 输入绑定
 	virtual void SetupInputComponent() override;

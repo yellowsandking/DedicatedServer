@@ -34,6 +34,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Server")
 	int32 GetPlayerCount() const;
 
+	// 判断是否是服务器端（同时检查HasAuthority和NetMode）
+	UFUNCTION(BlueprintCallable, Category = "Server")
+	bool IsServer() const;
+
 protected:
 	// 服务器端日志输出
 	UFUNCTION(BlueprintCallable, Category = "Server")

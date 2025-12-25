@@ -30,6 +30,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Server")
 	float GetServerUptime() const;
 
+	// 判断是否是服务器端（同时检查HasAuthority和NetMode）
+	UFUNCTION(BlueprintCallable, Category = "Server")
+	bool IsServer() const;
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
