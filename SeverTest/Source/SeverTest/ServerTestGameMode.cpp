@@ -28,7 +28,7 @@ void AServerTestGameMode::BeginPlay()
 	Super::BeginPlay();
 
 	// 检查是否在服务器端运行
-	if (IsServer())
+	if (HasAuthority())
 	{
 		LogServerMessage(TEXT("Dedicated Server Started!"));
 		LogServerMessage(FString::Printf(TEXT("Server is running on map: %s"), *GetWorld()->GetMapName()));
@@ -39,7 +39,7 @@ void AServerTestGameMode::InitGame(const FString& MapName, const FString& Option
 {
 	Super::InitGame(MapName, Options, ErrorMessage);
 
-	if (IsServer())
+	if (HasAuthority())
 	{
 		LogServerMessage(FString::Printf(TEXT("Server initialized with map: %s"), *MapName));
 	}
@@ -49,7 +49,7 @@ void AServerTestGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
 
-	if (IsServer())
+	if (HasAuthority())
 	{
 		CurrentPlayerCount++;
 		LogServerMessage(FString::Printf(TEXT("Player joined! Total players: %d"), CurrentPlayerCount));
@@ -67,7 +67,7 @@ void AServerTestGameMode::Logout(AController* Exiting)
 {
 	Super::Logout(Exiting);
 
-	if (IsServer())
+	if (HasAuthority())
 	{
 		CurrentPlayerCount = FMath::Max(0, CurrentPlayerCount - 1);
 		LogServerMessage(FString::Printf(TEXT("Player left! Remaining players: %d"), CurrentPlayerCount));
@@ -81,7 +81,7 @@ int32 AServerTestGameMode::GetPlayerCount() const
 
 void AServerTestGameMode::LogServerMessage(const FString& Message)
 {
-	if (IsServer())
+	if (HasAuthority())
 	{
 		// 在服务器控制台输出
 		UE_LOG(LogTemp, Warning, TEXT("[SERVER] %s"), *Message);
@@ -93,12 +93,6 @@ void AServerTestGameMode::LogServerMessage(const FString& Message)
 				FString::Printf(TEXT("[SERVER] %s"), *Message));
 		}
 	}
-}
-
-bool AServerTestGameMode::IsServer() const
-{
-	// 同时检查HasAuthority和NetMode，确保是服务器端
-	return HasAuthority() && GetNetMode() != NM_Client;
 }
 
 void AServerTestGameMode::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

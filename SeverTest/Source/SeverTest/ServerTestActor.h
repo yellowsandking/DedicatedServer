@@ -62,10 +62,6 @@ protected:
 	// 服务器端更新逻辑
 	void UpdateServerSide(float DeltaTime);
 
-	// 判断是否是服务器端（同时检查HasAuthority和NetMode）
-	UFUNCTION(BlueprintCallable, Category = "Server")
-	bool IsServer() const;
-
 	// 获取生命周期复制属性
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };
