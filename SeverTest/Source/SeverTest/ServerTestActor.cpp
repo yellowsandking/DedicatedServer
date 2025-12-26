@@ -12,11 +12,13 @@ AServerTestActor::AServerTestActor()
 	SetReplicatingMovement(true); // 启用移动复制
 
 	// 创建根组件
-	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
+	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("RootComponent"));
+	RootComponent = MeshComponent;
+	MeshComponent->SetMobility(EComponentMobility::Movable);
 
 	// 创建静态网格组件
-	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
-	MeshComponent->SetupAttachment(RootComponent);
+	// MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
+	// MeshComponent->SetupAttachment(RootComponent);
 
 	// 设置默认网格（使用引擎的基础形状）
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> CubeMesh(TEXT("/Engine/BasicShapes/Cube"));
@@ -41,8 +43,8 @@ void AServerTestActor::BeginPlay()
 	Super::BeginPlay();
 
 	InitialLocation = GetActorLocation();
-	ReplicatedLocation = InitialLocation;
-	ReplicatedRotation = GetActorRotation();
+	/*ReplicatedLocation = InitialLocation;
+	ReplicatedRotation = GetActorRotation();*/
 
 	if (HasAuthority())
 	{
@@ -82,7 +84,7 @@ void AServerTestActor::UpdateServerSide(float DeltaTime)
 	// 服务器端逻辑 - 蓝色日志
 	static float LogInterval = 0.0f;
 	LogInterval += DeltaTime;
-	
+
 	if (LogInterval >= 2.0f) // 每2秒输出一次日志，避免日志过多
 	{
 		LogInterval = 0.0f;
@@ -114,46 +116,46 @@ void AServerTestActor::UpdateServerSide(float DeltaTime)
 	SetActorRotation(NewRotation);
 
 	// 更新复制属性
-	ReplicatedLocation = NewLocation;
-	ReplicatedRotation = NewRotation;
+	// ReplicatedLocation = NewLocation;
+	// ReplicatedRotation = NewRotation;
 }
 
-void AServerTestActor::OnRep_Location()
-{
-	// 客户端接收到位置更新 - 绿色日志
-	if (!HasAuthority())
-	{
-		UE_LOG(LogTemp, Log, TEXT("[CLIENT] ServerTestActor received location update: %s"), *ReplicatedLocation.ToString());
-		if (GEngine)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green,
-				FString::Printf(TEXT("[CLIENT] Received location update: %s"), *ReplicatedLocation.ToString()));
-		}
-		SetActorLocation(ReplicatedLocation);
-	}
-}
+// void AServerTestActor::OnRep_Location()
+// {
+// 	// 客户端接收到位置更新 - 绿色日志
+// 	if (!HasAuthority())
+// 	{
+// 		UE_LOG(LogTemp, Log, TEXT("[CLIENT] ServerTestActor received location update: %s"), *ReplicatedLocation.ToString());
+// 		if (GEngine)
+// 		{
+// 			GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green,
+// 				FString::Printf(TEXT("[CLIENT] Received location update: %s"), *ReplicatedLocation.ToString()));
+// 		}
+// 		SetActorLocation(ReplicatedLocation);
+// 	}
+// }
 
-void AServerTestActor::OnRep_Rotation()
-{
-	// 客户端接收到旋转更新 - 绿色日志
-	if (!HasAuthority())
-	{
-		UE_LOG(LogTemp, Log, TEXT("[CLIENT] ServerTestActor received rotation update: %s"), *ReplicatedRotation.ToString());
-		if (GEngine)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green,
-				FString::Printf(TEXT("[CLIENT] Received rotation update: %s"), *ReplicatedRotation.ToString()));
-		}
-		SetActorRotation(ReplicatedRotation);
-	}
-}
+// void AServerTestActor::OnRep_Rotation()
+// {
+// 	// 客户端接收到旋转更新 - 绿色日志
+// 	if (!HasAuthority())
+// 	{
+// 		UE_LOG(LogTemp, Log, TEXT("[CLIENT] ServerTestActor received rotation update: %s"), *ReplicatedRotation.ToString());
+// 		if (GEngine)
+// 		{
+// 			GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green,
+// 				FString::Printf(TEXT("[CLIENT] Received rotation update: %s"), *ReplicatedRotation.ToString()));
+// 		}
+// 		SetActorRotation(ReplicatedRotation);
+// 	}
+// }
 
-void AServerTestActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	// 复制位置和旋转到所有客户端
-	DOREPLIFETIME(AServerTestActor, ReplicatedLocation);
-	DOREPLIFETIME(AServerTestActor, ReplicatedRotation);
-}
+//void AServerTestActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+//{
+//	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+//
+//	// 复制位置和旋转到所有客户端
+//	DOREPLIFETIME(AServerTestActor, ReplicatedLocation);
+//	DOREPLIFETIME(AServerTestActor, ReplicatedRotation);
+//}
 
