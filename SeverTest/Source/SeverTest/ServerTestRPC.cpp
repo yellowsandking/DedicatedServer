@@ -166,14 +166,20 @@ void AServerTestRPC::ClientReceiveServerTime_Implementation(float ServerTime)
 void AServerTestRPC::MulticastBroadcastMessage_Implementation(const FString& Message, const FString& SenderName)
 {
 	// 所有客户端和服务器都执行
-	UE_LOG(LogTemp, Warning, TEXT("[MULTICAST RPC] Broadcast message: %s (From: %s)"),
-		*Message, *SenderName);
+	ENetMode NetMode = GetNetMode();
+	FString NetModeString = (NetMode == NM_DedicatedServer) ? TEXT("DedicatedServer") :
+	                        (NetMode == NM_ListenServer) ? TEXT("ListenServer") :
+	                        (NetMode == NM_Client) ? TEXT("Client") :
+	                        (NetMode == NM_Standalone) ? TEXT("Standalone") : TEXT("Unknown");
+
+	UE_LOG(LogTemp, Warning, TEXT("[MULTICAST RPC] Broadcast message: %s (From: %s, NetMode: %s)"),
+		*Message, *SenderName, *NetModeString);
 
 	if (GEngine)
 	{
 		FColor DisplayColor = IsServer() ? FColor::Magenta : FColor::Orange;
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, DisplayColor,
-			FString::Printf(TEXT("[MULTICAST] %s: %s"), *SenderName, *Message));
+			FString::Printf(TEXT("[MULTICAST] %s: %s (NetMode: %s)"), *SenderName, *Message, *NetModeString));
 	}
 }
 
