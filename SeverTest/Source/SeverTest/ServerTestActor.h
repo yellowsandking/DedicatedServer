@@ -15,19 +15,19 @@ UCLASS()
 class SEVERTEST_API AServerTestActor : public AActor
 {
 	GENERATED_BODY()
-
-public:
+	
+public:	
 	AServerTestActor();
 
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 
 	// 网络复制属性
-	/*UPROPERTY(ReplicatedUsing = OnRep_Location, BlueprintReadOnly, Category = "Server")
+	UPROPERTY(ReplicatedUsing = OnRep_Location, BlueprintReadOnly, Category = "Server")
 	FVector ReplicatedLocation;
 
 	UPROPERTY(ReplicatedUsing = OnRep_Rotation, BlueprintReadOnly, Category = "Server")
-	FRotator ReplicatedRotation;*/
+	FRotator ReplicatedRotation;
 
 	// 移动速度
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Server")
@@ -53,16 +53,16 @@ protected:
 	float TimeAccumulator = 0.0f;
 
 	// 复制属性变化回调
-	/*UFUNCTION()
+	UFUNCTION()
 	void OnRep_Location();
 
 	UFUNCTION()
-	void OnRep_Rotation();*/
+	void OnRep_Rotation();
 
 	// 服务器端更新逻辑
 	void UpdateServerSide(float DeltaTime);
 
 	// 获取生命周期复制属性
-	//virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };
 

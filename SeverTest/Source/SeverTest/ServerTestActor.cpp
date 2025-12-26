@@ -9,7 +9,7 @@ AServerTestActor::AServerTestActor()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	bReplicates = true;
-	SetReplicatingMovement(true); // 启用移动复制
+	//SetReplicatingMovement(true); // 启用移动复制
 
 	// 创建根组件
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("RootComponent"));
@@ -43,8 +43,8 @@ void AServerTestActor::BeginPlay()
 	Super::BeginPlay();
 
 	InitialLocation = GetActorLocation();
-	/*ReplicatedLocation = InitialLocation;
-	ReplicatedRotation = GetActorRotation();*/
+	ReplicatedLocation = InitialLocation;
+	ReplicatedRotation = GetActorRotation();
 
 	if (HasAuthority())
 	{
@@ -116,46 +116,46 @@ void AServerTestActor::UpdateServerSide(float DeltaTime)
 	SetActorRotation(NewRotation);
 
 	// 更新复制属性
-	// ReplicatedLocation = NewLocation;
-	// ReplicatedRotation = NewRotation;
+	ReplicatedLocation = NewLocation;
+	ReplicatedRotation = NewRotation;
 }
 
-// void AServerTestActor::OnRep_Location()
-// {
-// 	// 客户端接收到位置更新 - 绿色日志
-// 	if (!HasAuthority())
-// 	{
-// 		UE_LOG(LogTemp, Log, TEXT("[CLIENT] ServerTestActor received location update: %s"), *ReplicatedLocation.ToString());
-// 		if (GEngine)
-// 		{
-// 			GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green,
-// 				FString::Printf(TEXT("[CLIENT] Received location update: %s"), *ReplicatedLocation.ToString()));
-// 		}
-// 		SetActorLocation(ReplicatedLocation);
-// 	}
-// }
+void AServerTestActor::OnRep_Location()
+{
+	// 客户端接收到位置更新 - 绿色日志
+	if (!HasAuthority())
+	{
+		UE_LOG(LogTemp, Log, TEXT("[CLIENT] ServerTestActor received location update: %s"), *ReplicatedLocation.ToString());
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green,
+				FString::Printf(TEXT("[CLIENT] Received location update: %s"), *ReplicatedLocation.ToString()));
+		}
+		SetActorLocation(ReplicatedLocation);
+	}
+}
 
-// void AServerTestActor::OnRep_Rotation()
-// {
-// 	// 客户端接收到旋转更新 - 绿色日志
-// 	if (!HasAuthority())
-// 	{
-// 		UE_LOG(LogTemp, Log, TEXT("[CLIENT] ServerTestActor received rotation update: %s"), *ReplicatedRotation.ToString());
-// 		if (GEngine)
-// 		{
-// 			GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green,
-// 				FString::Printf(TEXT("[CLIENT] Received rotation update: %s"), *ReplicatedRotation.ToString()));
-// 		}
-// 		SetActorRotation(ReplicatedRotation);
-// 	}
-// }
+void AServerTestActor::OnRep_Rotation()
+{
+	// 客户端接收到旋转更新 - 绿色日志
+	if (!HasAuthority())
+	{
+		UE_LOG(LogTemp, Log, TEXT("[CLIENT] ServerTestActor received rotation update: %s"), *ReplicatedRotation.ToString());
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green,
+				FString::Printf(TEXT("[CLIENT] Received rotation update: %s"), *ReplicatedRotation.ToString()));
+		}
+		SetActorRotation(ReplicatedRotation);
+	}
+}
 
-//void AServerTestActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-//{
-//	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-//
-//	// 复制位置和旋转到所有客户端
-//	DOREPLIFETIME(AServerTestActor, ReplicatedLocation);
-//	DOREPLIFETIME(AServerTestActor, ReplicatedRotation);
-//}
+void AServerTestActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	// 复制位置和旋转到所有客户端
+	DOREPLIFETIME(AServerTestActor, ReplicatedLocation);
+	DOREPLIFETIME(AServerTestActor, ReplicatedRotation);
+}
 
