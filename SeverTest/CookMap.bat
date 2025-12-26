@@ -3,7 +3,7 @@ G:\WorkSpace\UnrealEngine\Engine\Build\BatchFiles\RunUAT.bat BuildCookRun ^
 -server ^
 -serverplatform=Win64 ^
 -cook ^
--map=/Game/Maps/ServerMap ^
+-map=/Game/Maps/NewMap ^
 -build ^
 -stage ^
 -package
