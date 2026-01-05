@@ -8,6 +8,48 @@
 #include "ServerTestActor.generated.h"
 
 /**
+ * 位置和旋转的同步数据结构
+ */
+USTRUCT(BlueprintType)
+struct SEVERTEST_API FServerTestTransform
+{
+	GENERATED_BODY()
+
+	// 位置
+	UPROPERTY(BlueprintReadOnly)
+	FVector Location;
+
+	// 旋转
+	UPROPERTY(BlueprintReadOnly)
+	FRotator Rotation;
+
+	// 默认构造函数
+	FServerTestTransform()
+		: Location(FVector::ZeroVector)
+		, Rotation(FRotator::ZeroRotator)
+	{
+	}
+
+	// 带参数的构造函数
+	FServerTestTransform(const FVector& InLocation, const FRotator& InRotation)
+		: Location(InLocation)
+		, Rotation(InRotation)
+	{
+	}
+
+	// 相等比较运算符
+	bool operator==(const FServerTestTransform& Other) const
+	{
+		return Location.Equals(Other.Location, 0.1f) && Rotation.Equals(Other.Rotation, 0.1f);
+	}
+
+	bool operator!=(const FServerTestTransform& Other) const
+	{
+		return !(*this == Other);
+	}
+};
+
+/**
  * 演示Actor类 - 展示服务器-客户端同步
  * 这个Actor在服务器端控制，客户端会看到同步的位置和旋转
  */
@@ -22,12 +64,9 @@ public:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 
-	// 网络复制属性
-	UPROPERTY(ReplicatedUsing = OnRep_Location, BlueprintReadOnly, Category = "Server")
-	FVector ReplicatedLocation;
-
-	UPROPERTY(ReplicatedUsing = OnRep_Rotation, BlueprintReadOnly, Category = "Server")
-	FRotator ReplicatedRotation;
+	// 网络复制属性（合并的位置和旋转）
+	UPROPERTY(ReplicatedUsing = OnRep_Transform, BlueprintReadOnly, Category = "Server")
+	FServerTestTransform ReplicatedTransform;
 
 	// 移动速度
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Server")
@@ -52,12 +91,9 @@ protected:
 	// 时间累积
 	float TimeAccumulator = 0.0f;
 
-	// 复制属性变化回调
+	// 复制属性变化回调（合并的位置和旋转）
 	UFUNCTION()
-	void OnRep_Location();
-
-	UFUNCTION()
-	void OnRep_Rotation();
+	void OnRep_Transform();
 
 	// 服务器端更新逻辑
 	void UpdateServerSide(float DeltaTime);

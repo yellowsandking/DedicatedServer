@@ -43,8 +43,7 @@ void AServerTestActor::BeginPlay()
 	Super::BeginPlay();
 
 	InitialLocation = GetActorLocation();
-	ReplicatedLocation = InitialLocation;
-	ReplicatedRotation = GetActorRotation();
+	ReplicatedTransform = FServerTestTransform(InitialLocation, GetActorRotation());
 
 	if (HasAuthority())
 	{
@@ -115,38 +114,27 @@ void AServerTestActor::UpdateServerSide(float DeltaTime)
 	SetActorLocation(NewLocation);
 	SetActorRotation(NewRotation);
 
-	// 更新复制属性
-	ReplicatedLocation = NewLocation;
-	ReplicatedRotation = NewRotation;
+	// 更新复制属性（合并的位置和旋转）
+	FServerTestTransform NewTransform(NewLocation, NewRotation);
+	ReplicatedTransform = NewTransform;
 }
 
-void AServerTestActor::OnRep_Location()
+void AServerTestActor::OnRep_Transform()
 {
-	// 客户端接收到位置更新 - 绿色日志
+	// 客户端接收到位置和旋转更新 - 绿色日志
 	if (!HasAuthority())
 	{
-		UE_LOG(LogTemp, Log, TEXT("[CLIENT] ServerTestActor received location update: %s"), *ReplicatedLocation.ToString());
+		UE_LOG(LogTemp, Log, TEXT("[CLIENT] ServerTestActor received transform update - Location: %s, Rotation: %s"), 
+			*ReplicatedTransform.Location.ToString(), *ReplicatedTransform.Rotation.ToString());
 		if (GEngine)
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green,
-				FString::Printf(TEXT("[CLIENT] Received location update: %s"), *ReplicatedLocation.ToString()));
+				FString::Printf(TEXT("[CLIENT] Received transform update - Loc: %s, Rot: %s"), 
+					*ReplicatedTransform.Location.ToString(), *ReplicatedTransform.Rotation.ToString()));
 		}
-		SetActorLocation(ReplicatedLocation);
-	}
-}
-
-void AServerTestActor::OnRep_Rotation()
-{
-	// 客户端接收到旋转更新 - 绿色日志
-	if (!HasAuthority())
-	{
-		UE_LOG(LogTemp, Log, TEXT("[CLIENT] ServerTestActor received rotation update: %s"), *ReplicatedRotation.ToString());
-		if (GEngine)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green,
-				FString::Printf(TEXT("[CLIENT] Received rotation update: %s"), *ReplicatedRotation.ToString()));
-		}
-		SetActorRotation(ReplicatedRotation);
+		// 同时更新位置和旋转
+		SetActorLocation(ReplicatedTransform.Location);
+		SetActorRotation(ReplicatedTransform.Rotation);
 	}
 }
 
@@ -154,8 +142,7 @@ void AServerTestActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	// 复制位置和旋转到所有客户端
-	DOREPLIFETIME(AServerTestActor, ReplicatedLocation);
-	DOREPLIFETIME(AServerTestActor, ReplicatedRotation);
+	// 复制合并的位置和旋转到所有客户端（一次复制，减少网络开销）
+	DOREPLIFETIME(AServerTestActor, ReplicatedTransform);
 }
 
