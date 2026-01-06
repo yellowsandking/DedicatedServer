@@ -88,6 +88,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "RPC")
 	bool IsServer() const;
 
+	// 获取NetMode字符串（辅助方法）
+	// @return NetMode字符串
+	FString GetNetModeString() const;
+
 protected:
 	// 消息计数（用于测试）
 	UPROPERTY(Replicated)

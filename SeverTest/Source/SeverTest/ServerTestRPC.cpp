@@ -18,11 +18,7 @@ void AServerTestRPC::BeginPlay()
 {
 	Super::BeginPlay();
 
-	ENetMode NetMode = GetNetMode();
-	FString NetModeString = (NetMode == NM_DedicatedServer) ? TEXT("DedicatedServer") :
-		(NetMode == NM_ListenServer) ? TEXT("ListenServer") :
-		(NetMode == NM_Client) ? TEXT("Client") :
-		(NetMode == NM_Standalone) ? TEXT("Standalone") : TEXT("Unknown");
+	FString NetModeString = GetNetModeString();
 
 	UE_LOG(LogTemp, Warning, TEXT("[ServerTestRPC] BeginPlay - NetMode: %s, HasAuthority: %d"),
 		*NetModeString, HasAuthority() ? 1 : 0);
@@ -57,6 +53,8 @@ void AServerTestRPC::Tick(float DeltaTime)
 void AServerTestRPC::ServerSendMessage_Implementation(const FString& Message)
 {
 	// 服务器端执行
+	FString NetModeString = GetNetModeString();
+
 	MessageCount++;
 	LastReceivedMessage = Message;
 
@@ -66,13 +64,13 @@ void AServerTestRPC::ServerSendMessage_Implementation(const FString& Message)
 		PlayerName = PC->GetName();
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("[SERVER RPC] Received message from client: %s (Player: %s, Count: %d)"),
-		*Message, *PlayerName, MessageCount);
+	UE_LOG(LogTemp, Warning, TEXT("[SERVER RPC] Received message from client: %s (Player: %s, Count: %d, NetMode: %s)"),
+		*Message, *PlayerName, MessageCount, *NetModeString);
 
 	if (GEngine)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow,
-			FString::Printf(TEXT("[SERVER RPC] Message: %s (Count: %d)"), *Message, MessageCount));
+			FString::Printf(TEXT("[SERVER RPC] Message: %s (Count: %d, NetMode: %s)"), *Message, MessageCount, *NetModeString));
 	}
 
 	// 服务器收到消息后，广播给所有客户端
@@ -88,9 +86,19 @@ bool AServerTestRPC::ServerSendMessage_Validate(const FString& Message)
 void AServerTestRPC::ServerRequestCalculation_Implementation(float Value1, float Value2)
 {
 	// 服务器端执行计算
+	FString NetModeString = GetNetModeString();
+
 	float Result = Value1 + Value2;
 
-	UE_LOG(LogTemp, Warning, TEXT("[SERVER RPC] Calculation: %.2f + %.2f = %.2f"), Value1, Value2, Result);
+	UE_LOG(LogTemp, Warning, TEXT("[SERVER RPC] Calculation: %.2f + %.2f = %.2f (NetMode: %s)"),
+		Value1, Value2, Result, *NetModeString);
+
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow,
+			FString::Printf(TEXT("[SERVER RPC] Calculation: %.2f + %.2f = %.2f (NetMode: %s)"),
+				Value1, Value2, Result, *NetModeString));
+	}
 
 	// 将结果发送回客户端
 	ClientReceiveCalculationResult(Result);
@@ -105,9 +113,18 @@ bool AServerTestRPC::ServerRequestCalculation_Validate(float Value1, float Value
 void AServerTestRPC::ServerRequestServerTime_Implementation()
 {
 	// 服务器端返回当前时间
+	FString NetModeString = GetNetModeString();
+
 	float ServerTime = GetWorld()->GetTimeSeconds();
 
-	UE_LOG(LogTemp, Log, TEXT("[SERVER RPC] Server time requested: %.2f"), ServerTime);
+	UE_LOG(LogTemp, Warning, TEXT("[SERVER RPC] Server time requested: %.2f (NetMode: %s)"),
+		ServerTime, *NetModeString);
+
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Yellow,
+			FString::Printf(TEXT("[SERVER RPC] Server time: %.2f (NetMode: %s)"), ServerTime, *NetModeString));
+	}
 
 	// 发送时间到客户端
 	ClientReceiveServerTime(ServerTime);
@@ -123,41 +140,51 @@ bool AServerTestRPC::ServerRequestServerTime_Validate()
 void AServerTestRPC::ClientReceiveMessage_Implementation(const FString& Message, const FString& PlayerName)
 {
 	// 客户端执行
-	UE_LOG(LogTemp, Warning, TEXT("[CLIENT RPC] Received message from server: %s (From: %s)"),
-		*Message, *PlayerName);
+	FString NetModeString = GetNetModeString();
+
+	UE_LOG(LogTemp, Warning, TEXT("[CLIENT RPC] Received message from server: %s (From: %s, NetMode: %s)"),
+		*Message, *PlayerName, *NetModeString);
 
 	if (GEngine)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Cyan,
-			FString::Printf(TEXT("[CLIENT RPC] Message: %s (From: %s)"), *Message, *PlayerName));
+			FString::Printf(TEXT("[CLIENT RPC] Message: %s (From: %s, NetMode: %s)"),
+				*Message, *PlayerName, *NetModeString));
 	}
 }
 
 void AServerTestRPC::ClientReceiveCalculationResult_Implementation(float Result)
 {
 	// 客户端执行
-	UE_LOG(LogTemp, Warning, TEXT("[CLIENT RPC] Received calculation result: %.2f"), Result);
+	FString NetModeString = GetNetModeString();
+
+	UE_LOG(LogTemp, Warning, TEXT("[CLIENT RPC] Received calculation result: %.2f (NetMode: %s)"),
+		Result, *NetModeString);
 
 	if (GEngine)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Cyan,
-			FString::Printf(TEXT("[CLIENT RPC] Calculation result: %.2f"), Result));
+			FString::Printf(TEXT("[CLIENT RPC] Calculation result: %.2f (NetMode: %s)"),
+				Result, *NetModeString));
 	}
 }
 
 void AServerTestRPC::ClientReceiveServerTime_Implementation(float ServerTime)
 {
 	// 客户端执行
+	FString NetModeString = GetNetModeString();
+
 	float ClientTime = GetWorld()->GetTimeSeconds();
 	float Latency = ClientTime - ServerTime;
 
-	UE_LOG(LogTemp, Warning, TEXT("[CLIENT RPC] Server time: %.2f, Client time: %.2f, Latency: %.2f"),
-		ServerTime, ClientTime, Latency);
+	UE_LOG(LogTemp, Warning, TEXT("[CLIENT RPC] Server time: %.2f, Client time: %.2f, Latency: %.2f (NetMode: %s)"),
+		ServerTime, ClientTime, Latency, *NetModeString);
 
 	if (GEngine)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Cyan,
-			FString::Printf(TEXT("[CLIENT RPC] Server: %.2f | Latency: %.2f"), ServerTime, Latency));
+			FString::Printf(TEXT("[CLIENT RPC] Server: %.2f | Latency: %.2f (NetMode: %s)"),
+				ServerTime, Latency, *NetModeString));
 	}
 }
 
@@ -166,11 +193,7 @@ void AServerTestRPC::ClientReceiveServerTime_Implementation(float ServerTime)
 void AServerTestRPC::MulticastBroadcastMessage_Implementation(const FString& Message, const FString& SenderName)
 {
 	// 所有客户端和服务器都执行
-	ENetMode NetMode = GetNetMode();
-	FString NetModeString = (NetMode == NM_DedicatedServer) ? TEXT("DedicatedServer") :
-	                        (NetMode == NM_ListenServer) ? TEXT("ListenServer") :
-	                        (NetMode == NM_Client) ? TEXT("Client") :
-	                        (NetMode == NM_Standalone) ? TEXT("Standalone") : TEXT("Unknown");
+	FString NetModeString = GetNetModeString();
 
 	UE_LOG(LogTemp, Warning, TEXT("[MULTICAST RPC] Broadcast message: %s (From: %s, NetMode: %s)"),
 		*Message, *SenderName, *NetModeString);
@@ -186,14 +209,17 @@ void AServerTestRPC::MulticastBroadcastMessage_Implementation(const FString& Mes
 void AServerTestRPC::MulticastGameEvent_Implementation(const FString& EventName, const FString& EventData)
 {
 	// 所有客户端和服务器都执行
-	UE_LOG(LogTemp, Warning, TEXT("[MULTICAST RPC] Game event: %s - %s"),
-		*EventName, *EventData);
+	FString NetModeString = GetNetModeString();
+
+	UE_LOG(LogTemp, Warning, TEXT("[MULTICAST RPC] Game event: %s - %s (NetMode: %s)"),
+		*EventName, *EventData, *NetModeString);
 
 	if (GEngine)
 	{
 		FColor DisplayColor = IsServer() ? FColor::Magenta : FColor::Orange;
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, DisplayColor,
-			FString::Printf(TEXT("[MULTICAST] Event: %s - %s"), *EventName, *EventData));
+			FString::Printf(TEXT("[MULTICAST] Event: %s - %s (NetMode: %s)"),
+				*EventName, *EventData, *NetModeString));
 	}
 }
 
@@ -257,6 +283,17 @@ bool AServerTestRPC::IsServer() const
 {
 	// 同时检查HasAuthority和NetMode，确保是服务器端
 	return HasAuthority() && GetNetMode() != NM_Client;
+}
+
+FString AServerTestRPC::GetNetModeString() const
+{
+	ENetMode NetMode = GetNetMode();
+	FString NetModeString = (NetMode == NM_DedicatedServer) ? TEXT("DedicatedServer") :
+		(NetMode == NM_ListenServer) ? TEXT("ListenServer") :
+		(NetMode == NM_Client) ? TEXT("Client") :
+		(NetMode == NM_Standalone) ? TEXT("Standalone") : TEXT("Unknown");
+
+	return NetModeString;
 }
 
 void AServerTestRPC::ExecuteTest()
